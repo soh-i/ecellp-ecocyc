@@ -108,25 +108,26 @@ class EcocycParser(Parser):
         def find_attr(entory, query):
             if self.has_key(entory, query):
                 return self.get_attributes(entory, query)
-            else: return [None]
+            else: return [(query, "")]
             
         for reaction_id, reaction_entry in reaction.items():
+            # COMMENT
+            comment = find_attr(reaction_entry, "COMMENT")
+            db["ecocyc"].update( {reaction_id: {"COMMENT" : [(_[1]) for _ in comment ] }})
+            
             # REACTION TYPES
-            if self.has_key(reaction_entry, "TYPES"):
-                types = self.get_attributes(reaction_entry, "TYPES")
-                db["ecocyc"].update( {reaction_id: {"TYPES" : [(_[1]) for _ in types ] }})
-
+            types = find_attr(reaction_entry, "TYPES")
+            db["ecocyc"].update( {reaction_id: {"TYPES" : [(_[1]) for _ in types ] }})
+             
             # ENZYMATIC-REACTION
-            if self.has_key(reaction_entry, "ENZYMATIC-REACTION"):
-                enzrec = self.get_attributes(reaction_entry, "ENZYMATIC-REACTION")
-                db["ENZYMATIC-REACTION"].update(
-                    {reaction_id: {"ENZYMATIC-REACTION": [ (_[1]) for _ in enzrec ] }})
-
+            enzrec = find_attr(reaction_entry, "ENZYMATIC-REACTION")
+            db["ecocyc"].update(
+                {reaction_id: {"ENZYMATIC-REACTION": [ (_[1]) for _ in enzrec ] }})
+             
             # EC-NUMBER
-            if self.has_key(reaction_entry, "EC-NUMBER"):
-                ec = self.get_attributes(reaction_entry, "EC-NUMBER")
-                db["ecocyc"].update( {reaction_id: {"EC-NUMBER": [ (_[1]) for _ in ec ] }})
-
+            ec = find_attr(reaction_entry, "EC-NUMBER")
+            db["ecocyc"].update( {reaction_id: {"EC-NUMBER": [ (_[1]) for _ in ec ] }})
+             
             # LEFT
             left = find_attr(reaction_entry, "LEFT")
             db["ecocyc"].update( {reaction_id: {"LEFT": [ (_[1]) for _ in left ] }})
@@ -134,11 +135,11 @@ class EcocycParser(Parser):
             # RIGHT
             right = find_attr(reaction_entry, "RIGHT")
             db["ecocyc"].update( {reaction_id: {"RIGHT": [ (_[1]) for _ in right ] }})
-
+             
             # DIRECTION
             direction = find_attr(reaction_entry, "REACTION-DIRECTION")
             db["ecocyc"].update( {reaction_id: {"REACTION-DIRECTION": [ (_[1]) for _ in direction ] }})
-                        
+                       
         return db
 
     def genrate_enzymes_entory(self, dat):
