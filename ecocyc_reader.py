@@ -132,7 +132,7 @@ class EcocycParser(Parser):
             # LEFT
             left = self.get_attributes(reaction_entry, "LEFT")
             db[reaction_id].update({"LEFT": [ (_[1]) for _ in left ]})
-                
+    
             # RIGHT
             right = find_attr(reaction_entry, "RIGHT")
             db[reaction_id].update({"RIGHT": [ (_[1]) for _ in right ]})
@@ -141,27 +141,7 @@ class EcocycParser(Parser):
             direction = find_attr(reaction_entry, "REACTION-DIRECTION")
             db[reaction_id].update({"REACTION-DIRECTION": [ (_[1]) for _ in direction ]})
 
-            #if self.has_key(reaction_entry, "COEFFICIENT"):
-            #    coef = self.get_attributes(reaction_entry, "COEFFICIENT")
-            #    print coef
-            # 
-                       
         return db
-
-#    def type(self, q):
-#        pass
-#        
-#    def left(self, q):
-#        pass
-# 
-#    def right(self, q):
-#        pass
-# 
-#    def reaction_direction(self, q):
-#        pass
-#
-#    def ec(self, q):
-#        pass
 
     def genrate_enzymes_entory(self, dat):
         enzyme = self.read_ecocyc_file(dat)
@@ -184,7 +164,7 @@ def query(query, db, db_attr):
                 print db[id_].get("RIGHT")
                 print db[id_].get("LEFT")
                 print db[id_].get("REACTION-DIRECTION")
-                
+            
                 #return db[id_]
 
                 
@@ -198,26 +178,39 @@ if __name__ == '__main__':
     proteins_db = ecoparser.generate_proteins_entory(proteins_dat)
     reactions_db = ecoparser.generate_reactions_entory(reactions_dat)
     
-    for rec_id in reactions_db:
-        #print reactions_db[rec_id].get("ENZYMATIC-REACTION")
-        pass
-        
     queries = list()
     for protein_id in proteins_db:
         cats = proteins_db[protein_id].get("CATALYZES")
         if cats is not None:
             queries.append(cats)
-    print queries
 
-            
-    
+    print queries[0][1]
+    for q in queries[:10]:
+        print q
+
+    #proteins_query = ["UDPNACETYLGLUCOSAMENOLPYRTRANS-ENZRXN", "ENZRXN0-7642", "ENZRXN0-2703"]
+    for rec in reactions_db:
+        enzrecs = reactions_db[rec].get("ENZYMATIC-REACTION")
+        for q in queries[:]:
+            for pro_q in q:
+                if enzrecs is not None and pro_q in enzrecs:
+                    print "ProteinQuery: {}\n EC: {}\n Reactions: {} -> {}, Direction: {}".format(
+                        pro_q, reactions_db[rec]["EC-NUMBER"], reactions_db[rec]["LEFT"], reactions_db[rec]["RIGHT"],
+                        reactions_db[rec]["REACTION-DIRECTION"])
+                    print "-------"
+             
+    ## query: proteins, db: reactions
     #for rec in reactions_db:
-    #    enzrec = reactions_db[rec].get("ENZYMATIC-REACTION") #"enz_list[1]:
-    #    if enzrec is not None:
-    #        print [e for e in enz_list if e in enzrec]
+    #    enzrecs = reactions_db[rec].get("ENZYMATIC-REACTION")
+    #    if enzrecs is not None:
+    #        pass
     #        
-    #        if "ENZRXN0-1621" in enzrec:
-    #            print  reactions_db[rec].get("RIGHT")
-    #            print reactions_db[rec].get("LEFT")
-    #            print reactions_db[rec].get("REACTION-DIRECTION")
-    #        
+    #        #if "THYKI-ENZRXN" in enzrec for r in recs:
+    #        #print reactions_db[rec]
+    #        #if "ENZRXN0-1621" in enzrec:
+    #        #print  reactions_db[rec].get("RIGHT")
+    #        #print reactions_db[rec].get("LEFT")
+    #        #print reactions_db[rec].get("REACTION-DIRECTION")
+
+
+    
