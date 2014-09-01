@@ -67,7 +67,7 @@ class EcocycParser(Parser):
         
         db = defaultdict(dict, {"primary_key": { "source": os.path.basename(dat), "type": "protein"}})
         for protein_id, protein_entry in proteins.items():
-            synonyms = self.get_value(protein_entry, "COMMON-NAME") # get_value(protein_entry, "SYNONYMS")
+            synonyms = self.get_value(protein_entry, "COMMON-NAME")
             if len(synonyms) > 0:
                 #db.update({protein_id: {"synonyms": synonyms}})
                 pass
@@ -86,16 +86,16 @@ class EcocycParser(Parser):
                     {"CATALYZES": [ (_[1]) for _ in catalyzes ] })
              
             # FEATURES
-            #if self.has_key(protein_entry, "FEATURES"):
-            #    features = self.get_attributes(protein_entry, "FEATURES")
-            #    db["ecocyc"].update(
-            #        {protein_id: {"FEATURES": [ (_[1]) for _ in features ] }})
-            # 
-            ## GENE
-            #if self.has_key(protein_entry, "GENE"):
-            #    genes = self.get_attributes(protein_entry, "GENE")
-            #    db["ecocyc"].update(
-            #        {protein_id: {"GENE": [ (_[1]) for _ in genes ] }})
+            if self.has_key(protein_entry, "FEATURES"):
+                features = self.get_attributes(protein_entry, "FEATURES")
+                db[protein_id].update(
+                    {"FEATURES": [ (_[1]) for _ in features ] })
+             
+            # GENE
+            if self.has_key(protein_entry, "GENE"):
+                genes = self.get_attributes(protein_entry, "GENE")
+                db[protein_id].update(
+                    {"GENE": [ (_[1]) for _ in genes ] })
         return db
 
     def generate_features_entory(self, dat):
@@ -115,32 +115,31 @@ class EcocycParser(Parser):
         for reaction_id, reaction_entry in reaction.items():
             # COMMENT
             comment = find_attr(reaction_entry, "COMMENT")
-            db["ecocyc"].update( {reaction_id: {"COMMENT" : [(_[1]) for _ in comment ] }})
+            db[reaction_id].update({"COMMENT" : [(_[1]) for _ in comment ]})
             
             # REACTION TYPES
             types = find_attr(reaction_entry, "TYPES")
-            db["ecocyc"].update( {reaction_id: {"TYPES" : [(_[1]) for _ in types ] }})
+            db[reaction_id].update({"TYPES" : [(_[1]) for _ in types ]})
              
             # ENZYMATIC-REACTION
             enzrec = find_attr(reaction_entry, "ENZYMATIC-REACTION")
-            db["ecocyc"].update(
-                {reaction_id: {"ENZYMATIC-REACTION": [ (_[1]) for _ in enzrec ] }})
+            db[reaction_id].update({"ENZYMATIC-REACTION": [ (_[1]) for _ in enzrec ]})
              
             # EC-NUMBER
             ec = find_attr(reaction_entry, "EC-NUMBER")
-            db["ecocyc"].update( {reaction_id: {"EC-NUMBER": [ (_[1]) for _ in ec ] }})
+            db[reaction_id].update({"EC-NUMBER": [ (_[1]) for _ in ec ]})
              
             # LEFT
             left = self.get_attributes(reaction_entry, "LEFT")
-            db["ecocyc"].update( {reaction_id: {"LEFT": [ (_[1]) for _ in left ] }})
+            db[reaction_id].update({"LEFT": [ (_[1]) for _ in left ]})
                 
             # RIGHT
             right = find_attr(reaction_entry, "RIGHT")
-            db["ecocyc"].update( {reaction_id: {"RIGHT": [ (_[1]) for _ in right ] }})
+            db[reaction_id].update({"RIGHT": [ (_[1]) for _ in right ]})
              
             # DIRECTION
             direction = find_attr(reaction_entry, "REACTION-DIRECTION")
-            db["ecocyc"].update( {reaction_id: {"REACTION-DIRECTION": [ (_[1]) for _ in direction ] }})
+            db[reaction_id].update({"REACTION-DIRECTION": [ (_[1]) for _ in direction ]})
 
             #if self.has_key(reaction_entry, "COEFFICIENT"):
             #    coef = self.get_attributes(reaction_entry, "COEFFICIENT")
@@ -168,7 +167,6 @@ class EcocycParser(Parser):
         enzyme = self.read_ecocyc_file(dat)
         return enzyme
 
-        
 
 class EcocycQuery(object):
     def __init__(self):
@@ -177,7 +175,19 @@ class EcocycQuery(object):
     def query():
         pass
         
-        
+
+def query(query, db, db_attr):
+    for id_ in db:
+        records = db[id_].get(db_attr)
+        if records is not None:
+            if query in records:
+                print db[id_].get("RIGHT")
+                print db[id_].get("LEFT")
+                print db[id_].get("REACTION-DIRECTION")
+                
+                #return db[id_]
+
+                
 if __name__ == '__main__':
     proteins_dat  = '/Users/yukke/dev/ecellp2014/ecocyc/data/proteins.dat'
     features_dat  = '/Users/yukke/dev/ecellp2014/ecocyc/data/protein-features.dat'
@@ -186,12 +196,28 @@ if __name__ == '__main__':
     
     ecoparser = EcocycParser()
     proteins_db = ecoparser.generate_proteins_entory(proteins_dat)
-    for protein_id in proteins_db:
-        enz = proteins_db[protein_id].get("CATALYZES")
-        if enz:
-            print enz
+    reactions_db = ecoparser.generate_reactions_entory(reactions_dat)
+    
+    for rec_id in reactions_db:
+        #print reactions_db[rec_id].get("ENZYMATIC-REACTION")
+        pass
         
-    #features_db = ecoparser.generate_features_entory(features_dat)
-    #reactions = ecoparser.generate_reactions_entory(reactions_dat)
+    queries = list()
+    for protein_id in proteins_db:
+        cats = proteins_db[protein_id].get("CATALYZES")
+        if cats is not None:
+            queries.append(cats)
+    print queries
+
+            
     
-    
+    #for rec in reactions_db:
+    #    enzrec = reactions_db[rec].get("ENZYMATIC-REACTION") #"enz_list[1]:
+    #    if enzrec is not None:
+    #        print [e for e in enz_list if e in enzrec]
+    #        
+    #        if "ENZRXN0-1621" in enzrec:
+    #            print  reactions_db[rec].get("RIGHT")
+    #            print reactions_db[rec].get("LEFT")
+    #            print reactions_db[rec].get("REACTION-DIRECTION")
+    #        
