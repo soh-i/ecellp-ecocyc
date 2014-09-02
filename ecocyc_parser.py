@@ -4,8 +4,13 @@ from collections import defaultdict
 import os.path
 import logging
 
+__author__  = 'Soh ISHIGURO'
+__email__   = 'si914@sfc.keio.ac.jp'
+__license__ = 'Not yet'
+
 pp = pprint.PrettyPrinter()
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)s %(message)s")
+
 
 class Parser(object):
     def __init__(self):
@@ -32,11 +37,11 @@ class Parser(object):
         elif line[-2: ] == " -":
             return (line[: -2], "")
         else:
-            raise RuntimeError, "'{}'".format(line)
+            raise ValueError, "'{}'".format(line)
 
     def read_ecocyc_file(self, filename):
         if not os.path.isfile(filename):
-            raise RuntimeError, "{0} is not found".format(filename)
+            raise ValueError, "{0} is not found".format(filename)
             
         unique_id, cache = None, []
         retval = {}
@@ -49,7 +54,7 @@ class Parser(object):
                     pass # Header line
                 elif line == "//":
                     if unique_id is None:
-                        raise RuntimeError, "No UNIQUE-ID was specified."
+                        raise ValueError, "No UNIQUE-ID was specified."
                     retval[unique_id] = copy.copy(cache)
                     unique_id, cache = None, []
                 elif line[0] == "/": # Comment line
@@ -101,11 +106,28 @@ class EcocycParser(Parser):
                 genes = self.get_attributes(protein_entry, "GENE")
                 db[protein_id].update(
                     {"GENE": [ (_[1]) for _ in genes ] })
+
+            # TYPE
+            types = self.find_attr(protein_entry, "TYPES")
+            db[protein_id].update({"TYPES" : [ (_[1]) for _ in types ] })
+
+            # MODIFIED-FORM
+            mod_form = self.find_attr(protein_entry, "MODIFIED-FORM")
+            db[protein_id].update({"MODIFIED-FORM" : [ (_[1]) for _ in mod_form ]})
+
+            # UNMODIFIED-FORM
+            unmod_form = self.find_attr(protein_entry, "UNMODIFIED-FORM")
+            db[protein_id].update({"UNMODIFIED-FORM" : [ (_[1]) for _ in unmod_form ]})
+
+                
         return db
 
     def generate_features_entory(self, dat):
-        features = self.read_ecocyc_file(dat)
-        return features
+        return self.read_ecocyc_file(dat) # FIXME
+                
+    def genrate_enzymes_entory(self, dat):
+        return self.read_ecocyc_file(dat) # FIXME
+
         
     def generate_reactions_entory(self, dat):
         reaction = self.read_ecocyc_file(dat)
@@ -116,9 +138,9 @@ class EcocycParser(Parser):
             comment = self.find_attr(reaction_entry, "COMMENT")
             db[reaction_id].update({"COMMENT" : [(_[1]) for _ in comment ]})
             
-            # REACTION TYPES
-            types = self.find_attr(reaction_entry, "TYPES")
-            db[reaction_id].update({"TYPES" : [(_[1]) for _ in types ]})
+            # REACTION TYPES                                             
+            types = self.find_attr(reaction_entry, "TYPES")              
+            db[reaction_id].update({"TYPES" : [(_[1]) for _ in types ]}) 
              
             # ENZYMATIC-REACTION
             enzrec = self.find_attr(reaction_entry, "ENZYMATIC-REACTION")
@@ -142,13 +164,12 @@ class EcocycParser(Parser):
             
         return db
 
-    def genrate_enzymes_entory(self, dat):
-        enzyme = self.read_ecocyc_file(dat)
-        return enzyme
-
         
 class InteractionMap(object):
     def __init__(self):
+        pass
+
+    def __exit__(self):
         pass
 
 class EnzInteractionMap(InteractionMap):
@@ -193,29 +214,7 @@ class EnzInteractionMap(InteractionMap):
                                 reactions_db[reaction]["REACTION-DIRECTION"]))
         return db
 
-        
-class ProteinOrigin(object):
-    def __init__(self):
-        pass
 
-    def parent(self):
-        pass
-
-        
-class ProteinComponentRelation(ProteinOrigin):
-    def __init__(self):
-        ProteinOrigin.__init__(self)
-
-        
-class ModifiedProteinRelation(ProteinOrigin):
-    def __init__(self):
-        ProteinOrigin.__init__(self)
-
-    def modified_proteins(self, proteins_db):
-        if proteins_db[p_id]["TYPES"] == "Modified-Proteins":
-            pass 
-
-        
 if __name__ == '__main__':
     proteins_dat  = '/Users/yukke/dev/ecellp2014/ecocyc/data/proteins.dat'
     features_dat  = '/Users/yukke/dev/ecellp2014/ecocyc/data/protein-features.dat'
@@ -226,9 +225,11 @@ if __name__ == '__main__':
     proteins_db = ecoparser.generate_proteins_entory(proteins_dat)
     reactions_db = ecoparser.generate_reactions_entory(reactions_dat)
 
-    rec_map = EnzInteractionMap()
-    all_enzyme_reactions = rec_map.generate_enz_reaction_map(proteins_db=proteins_db, reactions_db=reactions_db)
+    #rec_map = EnzInteractionMap()
+    #all_enzyme_reactions = rec_map.generate_enz_reaction_map(proteins_db=proteins_db,
+    #                                                         reactions_db=reactions_db)
 
+    
     # query: proteins, db: reactions
     #for rec in reactions_db:
     #    enzrecs = reactions_db[rec].get("ENZYMATIC-REACTION")
