@@ -16,6 +16,11 @@ class Parser(object):
     def get_attributes(self, entry, key):
         return filter(lambda attr: attr[0] == key, entry)
 
+    def find_attr(self, entory, query):
+        if self.has_key(entory, query):
+            return self.get_attributes(entory, query)
+        else: return [(query, "")]
+
     def get_value(self, entry, key):
         return [attr[1] for attr in self.get_attributes(entry, key)]
 
@@ -107,26 +112,22 @@ class EcocycParser(Parser):
         db = defaultdict(dict, {"primary_key":
                                 {"source": os.path.basename(dat), "type": "reactions" }})
         
-        def find_attr(entory, query):
-            if self.has_key(entory, query):
-                return self.get_attributes(entory, query)
-            else: return [(query, "")]
             
         for reaction_id, reaction_entry in reaction.items():
             # COMMENT
-            comment = find_attr(reaction_entry, "COMMENT")
+            comment = self.find_attr(reaction_entry, "COMMENT")
             db[reaction_id].update({"COMMENT" : [(_[1]) for _ in comment ]})
             
             # REACTION TYPES
-            types = find_attr(reaction_entry, "TYPES")
+            types = self.find_attr(reaction_entry, "TYPES")
             db[reaction_id].update({"TYPES" : [(_[1]) for _ in types ]})
              
             # ENZYMATIC-REACTION
-            enzrec = find_attr(reaction_entry, "ENZYMATIC-REACTION")
+            enzrec = self.find_attr(reaction_entry, "ENZYMATIC-REACTION")
             db[reaction_id].update({"ENZYMATIC-REACTION": [ (_[1]) for _ in enzrec ]})
              
             # EC-NUMBER
-            ec = find_attr(reaction_entry, "EC-NUMBER")
+            ec = self.find_attr(reaction_entry, "EC-NUMBER")
             db[reaction_id].update({"EC-NUMBER": [ (_[1]) for _ in ec ]})
              
             # LEFT
@@ -134,11 +135,11 @@ class EcocycParser(Parser):
             db[reaction_id].update({"LEFT": [ (_[1]) for _ in left ]})
     
             # RIGHT
-            right = find_attr(reaction_entry, "RIGHT")
+            right = self.find_attr(reaction_entry, "RIGHT")
             db[reaction_id].update({"RIGHT": [ (_[1]) for _ in right ]})
              
             # DIRECTION
-            direction = find_attr(reaction_entry, "REACTION-DIRECTION")
+            direction = self.find_attr(reaction_entry, "REACTION-DIRECTION")
             db[reaction_id].update({"REACTION-DIRECTION": [ (_[1]) for _ in direction ]})
 
         return db
