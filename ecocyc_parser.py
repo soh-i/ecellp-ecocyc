@@ -75,8 +75,7 @@ class EcocycParser(Parser):
         for protein_id, protein_entry in proteins.items():
             synonyms = self.get_value(protein_entry, "COMMON-NAME")
             if len(synonyms) > 0:
-                #db.update({protein_id: {"synonyms": synonyms}})
-                pass
+                db.update({protein_id: {"synonyms": synonyms}})
 
             # COMPONENTS
             if self.has_key(protein_entry, "COMPONENTS"):
@@ -164,16 +163,18 @@ class EnzInteractionMap(InteractionMap):
             if cats is not None:
                 queries.append(cats)
         if len(queries) > 0:
-            return querie
+            return queries
         else: raise ValueError,"{0} is is not contain 'CATALYZES' attribute".format(proteins_db)
 
-    def generate_enz_reaction_map(self, reaction_db="", protein_db=""):
-        assert len(reactions_db) ==  "", "Database name error"
-        assert len(protein_db) == "", "Database name error"
+    def generate_enz_reaction_map(self, reactions_db="", proteins_db="", debug=False):
+        if reactions_db == "": raise ValueError, "Database[{}] name error".format(reactions_db)
+        if proteins_db  == "": raise ValueError, "Database[{}] name error".format(proteins_db)
         
-        db = defaultdict(dict, {"primary_key": {"source": reaction_db["source"], "type": "enzrxns"}})
+        db = defaultdict(dict, {"primary_key": {"source": reactions_db["source"], "type": "enzrxns"}})
         # map(os.path.basename, [proteins_dat, reactions_dat])
-    
+        # proteins_query_t = ["UDPNACETYLGLUCOSAMENOLPYRTRANS-ENZRXN", "ENZRXN0-7642", "ENZRXN0-2703"]
+        
+        queries = self.generate_query(proteins_db)
         for reaction in reactions_db:
             enzrxns = reactions_db[reaction].get("ENZYMATIC-REACTION")
             for query in queries[:]:
@@ -183,7 +184,7 @@ class EnzInteractionMap(InteractionMap):
                     if enzrxns is not None and inn_qry in enzrxns:
                         direction = "".join(map(str, reactions_db[reaction]["REACTION-DIRECTION"]))
                         db.update({inn_qry: {"reaction": reactions_db[reaction], "direction": direction}})
-                    
+                        
                         if debug:
                             logging.debug("ProteinQuery: {}\n EC: {}\n Reactions: {} -> {}, Direction: {}".format(
                                 inn_qry, reactions_db[reaction]["EC-NUMBER"],
@@ -226,12 +227,8 @@ if __name__ == '__main__':
     reactions_db = ecoparser.generate_reactions_entory(reactions_dat)
 
     rec_map = EnzInteractionMap()
-    print rec_map.generate_enz_reaction_map()
-    
-    #proteins_query_t = ["UDPNACETYLGLUCOSAMENOLPYRTRANS-ENZRXN", "ENZRXN0-7642", "ENZRXN0-2703"]
+    all_enzyme_reactions = rec_map.generate_enz_reaction_map(proteins_db=proteins_db, reactions_db=reactions_db)
 
-
-    
     # query: proteins, db: reactions
     #for rec in reactions_db:
     #    enzrecs = reactions_db[rec].get("ENZYMATIC-REACTION")
@@ -244,6 +241,5 @@ if __name__ == '__main__':
     #        #print  reactions_db[rec].get("RIGHT")
     #        #print reactions_db[rec].get("LEFT")
     #        #print reactions_db[rec].get("REACTION-DIRECTION")
-
 
     
