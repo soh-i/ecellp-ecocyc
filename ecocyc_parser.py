@@ -8,14 +8,12 @@ __author__  = 'Soh ISHIGURO'
 __email__   = 'si914@sfc.keio.ac.jp'
 __license__ = 'Not yet'
 
-pp = pprint.PrettyPrinter()
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)s %(message)s")
-
 
 class Parser(object):
+    
     def __init__(self):
-        pass
-
+        logging.basicConfig(level=logging.DEBUG,
+                            format="%(asctime)s %(levelname)s %(message)s")
     def has_key(self, entry, key):
         return any([attr[0] == key for attr in entry])
 
@@ -75,7 +73,6 @@ class EcocycParser(Parser):
 
     def generate_proteins_entory(self, dat):
         proteins = self.read_ecocyc_file(dat)
-        
         db = defaultdict(dict, {"primary_key": { "source": os.path.basename(dat), "type": "protein"}})
         for protein_id, protein_entry in proteins.items():
             synonyms = self.get_value(protein_entry, "COMMON-NAME")
@@ -164,29 +161,5 @@ class EcocycParser(Parser):
 
 
 if __name__ == '__main__':
-    proteins_dat  = '/Users/yukke/dev/ecellp2014/ecocyc/data/proteins.dat'
-    reactions_dat = '/Users/yukke/dev/ecellp2014/ecocyc/data/reactions.dat'
-    features_dat  = '/Users/yukke/dev/ecellp2014/ecocyc/data/protein-features.dat'
-    enzrxns_dat   = '/Users/yukke/dev/ecellp2014/ecocyc/data/enzrxns.dat'
-    
-    ecoparser = EcocycParser()
-    proteins_db = ecoparser.generate_proteins_entory(proteins_dat)
-    reactions_db = ecoparser.generate_reactions_entory(reactions_dat)
-    enz = EnzInteractionMap()
-    enz_interaction = enz.generate_enz_reaction_map(proteins_db=proteins_db, reactions_db=reactions_db)
-    pp.pprint(enz_interaction)
-    
-    # query: proteins, db: reactions
-    #for rec in reactions_db:
-    #    enzrecs = reactions_db[rec].get("ENZYMATIC-REACTION")
-    #    if enzrecs is not None:
-    #        pass
-    #        
-    #        #if "THYKI-ENZRXN" in enzrec for r in recs:
-    #        #print reactions_db[rec]
-    #        #if "ENZRXN0-1621" in enzrec:
-    #        #print  reactions_db[rec].get("RIGHT")
-    #        #print reactions_db[rec].get("LEFT")
-    #        #print reactions_db[rec].get("REACTION-DIRECTION")
-
+    pass
     
