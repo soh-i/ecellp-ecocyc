@@ -41,7 +41,7 @@ class Parser(object):
 
     def read_ecocyc_file(self, filename):
         if not os.path.isfile(filename):
-            raise ValueError, "{0} is not found".format(filename)
+            raise RuntimeError, "{0} is not found".format(filename)
             
         unique_id, cache = None, []
         retval = {}
@@ -83,30 +83,26 @@ class EcocycParser(Parser):
                 db.update({protein_id: {"synonyms": synonyms}})
 
             # COMPONENTS
-            if self.has_key(protein_entry, "COMPONENTS"):
-                components = self.get_attributes(protein_entry, "COMPONENTS")
-                db[protein_id].update(
-                    {"COMPONENTS"  : [ (attr[1]) for attr in components],
-                     "COEFFICIENTS": [ (1 if len(attr) == 2 else int(attr[3])) for attr in components] })
+            components = self.find_attr(protein_entry, "COMPONENTS")
+            db[protein_id].update(
+                {"COMPONENTS"  : [ (attr[1]) for attr in components],
+                 "COEFFICIENTS": [ (1 if len(attr) == 2 else int(attr[3])) for attr in components] })
                 
             # CATALYZES
-            if self.has_key(protein_entry, "CATALYZES"):
-                catalyzes = self.get_attributes(protein_entry, "CATALYZES")
-                db[protein_id].update(
-                    {"CATALYZES": [ (_[1]) for _ in catalyzes ] })
+            catalyzes = self.find_attr(protein_entry, "CATALYZES")
+            db[protein_id].update(
+                {"CATALYZES": [ (_[1]) for _ in catalyzes ] })
              
             # FEATURES
-            if self.has_key(protein_entry, "FEATURES"):
-                features = self.get_attributes(protein_entry, "FEATURES")
-                db[protein_id].update(
-                    {"FEATURES": [ (_[1]) for _ in features ] })
+            features = self.find_attr(protein_entry, "FEATURES")
+            db[protein_id].update(
+                {"FEATURES": [ (_[1]) for _ in features ] })
              
             # GENE
-            if self.has_key(protein_entry, "GENE"):
-                genes = self.get_attributes(protein_entry, "GENE")
-                db[protein_id].update(
-                    {"GENE": [ (_[1]) for _ in genes ] })
-
+            genes = self.find_attr(protein_entry, "GENE")
+            db[protein_id].update(
+                {"GENE": [ (_[1]) for _ in genes ] })
+                
             # TYPE
             types = self.find_attr(protein_entry, "TYPES")
             db[protein_id].update({"TYPES" : [ (_[1]) for _ in types ] })
@@ -119,15 +115,11 @@ class EcocycParser(Parser):
             unmod_form = self.find_attr(protein_entry, "UNMODIFIED-FORM")
             db[protein_id].update({"UNMODIFIED-FORM" : [ (_[1]) for _ in unmod_form ]})
 
-                
+            # REGULATES
+            regulates = self.find_attr(protein_entry, "REGULATES")
+            db[protein_id].update({"REGULATES" : [ (_[1]) for _ in regulates ]})
+            
         return db
-
-    def generate_features_entory(self, dat):
-        return self.read_ecocyc_file(dat) # FIXME
-                
-    def genrate_enzymes_entory(self, dat):
-        return self.read_ecocyc_file(dat) # FIXME
-
         
     def generate_reactions_entory(self, dat):
         reaction = self.read_ecocyc_file(dat)
@@ -163,6 +155,13 @@ class EcocycParser(Parser):
             db[reaction_id].update({"REACTION-DIRECTION": [ (_[1]) for _ in direction ]})
             
         return db
+
+    def generate_features_entory(self, dat):
+        return self.read_ecocyc_file(dat) # FIXME
+                
+    def genrate_enzymes_entory(self, dat):
+        return self.read_ecocyc_file(dat) # FIXME
+
 
         
 class InteractionMap(object):
