@@ -163,71 +163,18 @@ class EcocycParser(Parser):
         return self.read_ecocyc_file(dat) # FIXME
 
 
-        
-class InteractionMap(object):
-    def __init__(self):
-        pass
-
-    def __exit__(self):
-        pass
-
-class EnzInteractionMap(InteractionMap):
-    def __init__(self):
-        InteractionMap.__init__(self)
-
-    def generate_query(self, proteins_db):
-        # search catalyzes attribute in proteins.dat
-        queries = list()
-        for protein_id in proteins_db:
-            cats = proteins_db[protein_id].get("CATALYZES")
-            if cats is not None:
-                queries.append(cats)
-        if len(queries) > 0:
-            return queries
-        else: raise ValueError,"{0} is is not contain 'CATALYZES' attribute".format(proteins_db)
-
-    def generate_enz_reaction_map(self, reactions_db="", proteins_db="", debug=False):
-        if reactions_db == "": raise ValueError, "Database[{}] name error".format(reactions_db)
-        if proteins_db  == "": raise ValueError, "Database[{}] name error".format(proteins_db)
-        
-        db = defaultdict(dict, {"primary_key": {"source": reactions_db["source"], "type": "enzrxns"}})
-        # map(os.path.basename, [proteins_dat, reactions_dat])
-        # proteins_query_t = ["UDPNACETYLGLUCOSAMENOLPYRTRANS-ENZRXN", "ENZRXN0-7642", "ENZRXN0-2703"]
-        
-        queries = self.generate_query(proteins_db)
-        for reaction in reactions_db:
-            enzrxns = reactions_db[reaction].get("ENZYMATIC-REACTION")
-            for query in queries[:]:
-                #for query in [ proteins_db[protein_id].get("CATALYZES")
-                #for protein_id in proteins_db if proteins_db[protein_id].get("CATALYZES") is not None]:
-                for inn_qry in query:
-                    if enzrxns is not None and inn_qry in enzrxns:
-                        direction = "".join(map(str, reactions_db[reaction]["REACTION-DIRECTION"]))
-                        db.update({inn_qry: {"reaction": reactions_db[reaction], "direction": direction}})
-                        
-                        if debug:
-                            logging.debug("ProteinQuery: {}\n EC: {}\n Reactions: {} -> {}, Direction: {}".format(
-                                inn_qry, reactions_db[reaction]["EC-NUMBER"],
-                                reactions_db[reaction]["LEFT"],
-                                reactions_db[reaction]["RIGHT"],
-                                reactions_db[reaction]["REACTION-DIRECTION"]))
-        return db
-
-
 if __name__ == '__main__':
     proteins_dat  = '/Users/yukke/dev/ecellp2014/ecocyc/data/proteins.dat'
-    features_dat  = '/Users/yukke/dev/ecellp2014/ecocyc/data/protein-features.dat'
     reactions_dat = '/Users/yukke/dev/ecellp2014/ecocyc/data/reactions.dat'
+    features_dat  = '/Users/yukke/dev/ecellp2014/ecocyc/data/protein-features.dat'
     enzrxns_dat   = '/Users/yukke/dev/ecellp2014/ecocyc/data/enzrxns.dat'
     
     ecoparser = EcocycParser()
     proteins_db = ecoparser.generate_proteins_entory(proteins_dat)
     reactions_db = ecoparser.generate_reactions_entory(reactions_dat)
-
-    #rec_map = EnzInteractionMap()
-    #all_enzyme_reactions = rec_map.generate_enz_reaction_map(proteins_db=proteins_db,
-    #                                                         reactions_db=reactions_db)
-
+    enz = EnzInteractionMap()
+    enz_interaction = enz.generate_enz_reaction_map(proteins_db=proteins_db, reactions_db=reactions_db)
+    pp.pprint(enz_interaction)
     
     # query: proteins, db: reactions
     #for rec in reactions_db:
