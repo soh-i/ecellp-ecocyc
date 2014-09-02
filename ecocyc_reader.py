@@ -2,9 +2,10 @@ import copy
 import pprint
 from collections import defaultdict
 import os.path
+import logging
 
 pp = pprint.PrettyPrinter()
-
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)s %(message)s")
 
 class Parser(object):
     def __init__(self):
@@ -109,10 +110,8 @@ class EcocycParser(Parser):
         
     def generate_reactions_entory(self, dat):
         reaction = self.read_ecocyc_file(dat)
-        db = defaultdict(dict, {"primary_key":
-                                {"source": os.path.basename(dat), "type": "reactions" }})
+        db = defaultdict(dict, {"primary_key": {"source": map(os.path.basename, [dat]), "type": "reactions" }})
         
-            
         for reaction_id, reaction_entry in reaction.items():
             # COMMENT
             comment = self.find_attr(reaction_entry, "COMMENT")
@@ -157,16 +156,35 @@ class EcocycQuery(object):
         pass
         
 
-def query(query, db, db_attr):
-    for id_ in db:
-        records = db[id_].get(db_attr)
-        if records is not None:
-            if query in records:
-                print db[id_].get("RIGHT")
-                print db[id_].get("LEFT")
-                print db[id_].get("REACTION-DIRECTION")
-            
-                #return db[id_]
+class InteractionMap(object):
+    def __init__(self):
+        pass
+
+class EnzInteractinMap(InteractionMap):
+    def __init__(self):
+        InteractionMap.__init__(self)
+        
+    def query_by_protein(self, name):
+        pass
+
+    def query_by_reaction_type(self, rectype):
+        pass
+
+    def query_by_EC(self, ec):
+        pass
+
+    
+        
+#def query(query, db, db_attr):
+#    for id_ in db:
+#        records = db[id_].get(db_attr)
+#        if records is not None:
+#            if query in records:
+#                print db[id_].get("RIGHT")
+#                print db[id_].get("LEFT")
+#                print db[id_].get("REACTION-DIRECTION")
+#            
+#                #return db[id_]
 
                 
 if __name__ == '__main__':
@@ -178,28 +196,43 @@ if __name__ == '__main__':
     ecoparser = EcocycParser()
     proteins_db = ecoparser.generate_proteins_entory(proteins_dat)
     reactions_db = ecoparser.generate_reactions_entory(reactions_dat)
+
     
+    #print queries[0][1]
+    #for q in queries[:10]:
+    #    print q
+
+    #proteins_query_t = ["UDPNACETYLGLUCOSAMENOLPYRTRANS-ENZRXN", "ENZRXN0-7642", "ENZRXN0-2703"]
+
+    debug = False
+
+
+    # search catalyzes
     queries = list()
     for protein_id in proteins_db:
         cats = proteins_db[protein_id].get("CATALYZES")
         if cats is not None:
             queries.append(cats)
+    
+    db = defaultdict(dict, {"primary_key":
+                            {"source": map(os.path.basename, [proteins_dat, reactions_dat]), "type": "enzrxns"}})
+    
+    for reaction in reactions_db:
+        enzrxns = reactions_db[reaction].get("ENZYMATIC-REACTION")
+        for query in queries[:]:
+            for inn_qry in query:
+                if enzrxns is not None and inn_qry in enzrxns:
+                    direction = "".join(map(str, reactions_db[reaction]["REACTION-DIRECTION"]))
+                    db.update({inn_qry: {"reaction": reactions_db[reaction], "direction": direction}})
 
-    print queries[0][1]
-    for q in queries[:10]:
-        print q
-
-    #proteins_query = ["UDPNACETYLGLUCOSAMENOLPYRTRANS-ENZRXN", "ENZRXN0-7642", "ENZRXN0-2703"]
-    for rec in reactions_db:
-        enzrecs = reactions_db[rec].get("ENZYMATIC-REACTION")
-        for q in queries[:]:
-            for pro_q in q:
-                if enzrecs is not None and pro_q in enzrecs:
-                    print "ProteinQuery: {}\n EC: {}\n Reactions: {} -> {}, Direction: {}".format(
-                        pro_q, reactions_db[rec]["EC-NUMBER"], reactions_db[rec]["LEFT"], reactions_db[rec]["RIGHT"],
-                        reactions_db[rec]["REACTION-DIRECTION"])
-                    print "-------"
-             
+                    if debug:
+                        logging.debug("ProteinQuery: {}\n EC: {}\n Reactions: {} -> {}, Direction: {}".format(
+                            inn_qry, reactions_db[reaction]["EC-NUMBER"],
+                            reactions_db[reaction]["LEFT"],
+                            reactions_db[reaction]["RIGHT"],
+                            reactions_db[reaction]["REACTION-DIRECTION"]))
+                    
+    pp.pprint(db.items())
     ## query: proteins, db: reactions
     #for rec in reactions_db:
     #    enzrecs = reactions_db[rec].get("ENZYMATIC-REACTION")
