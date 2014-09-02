@@ -11,6 +11,7 @@ __license__ = 'Not yet'
 
 pp = pprint.PrettyPrinter()
 
+
 class InteractionMap(object):
     def __init__(self):
         pass
@@ -72,10 +73,9 @@ class ModifiedProteinInteraction(ComponentInteraction):
     def __init__(self, proteins_db):
         ComponentInteraction.__init__(self)
         self.proteins_db = proteins_db
-
-    def to_string(self, mapped):
-        for v in mapped:
-            return "Modified:'{}' => Original:'{}'".format(mapped[v]["TO"], mappedn[v]["FROM"])
+        
+    def __repr__(self):
+        return ""
         
     def traceback_to_unmodified_proteins(self,):
         mapping = defaultdict(dict, {"primary_key": {"source": ["ecocyc"], "type": "modification" }})
@@ -109,5 +109,7 @@ if __name__ == '__main__':
     #pp.pprint(enz_interaction)
 
     modproteins = ModifiedProteinInteraction(proteins_db)
-    modproteins.traceback_to_unmodified_proteins()
+    traceback = modproteins.traceback_to_unmodified_proteins()
+    for j in traceback:
+        print traceback[j]
     
