@@ -77,7 +77,7 @@ class ModifiedProteinInteraction(ComponentInteraction):
     def __repr__(self):
         return ""
         
-    def traceback_to_unmodified_proteins(self,):
+    def traceback_to_unmodified_proteins(self):
         mapping = defaultdict(dict, {"primary_key": {"source": ["ecocyc"], "type": "modification" }})
         for p_id in self.proteins_db:
             types = self.proteins_db[p_id].get("TYPES")
@@ -88,7 +88,7 @@ class ModifiedProteinInteraction(ComponentInteraction):
                 assert len(unmodified_p) == 1, "Unexpected elements in unmodified array"
                 if unmodified_p[0] in [ _ for _ in self.proteins_db ]:
                     type_name = next(itertools.ifilter(lambda x: "Modified-Proteins" not in x, types), None)
-                    mapping.update({unmodified_p[0]: {"TO": type_name, "FROM": unmodified_p[0]}})
+                    mapping.update( {unmodified_p[0]: {"TO": type_name, "FROM": unmodified_p[0]}} )
         return mapping
 
                     
@@ -103,13 +103,13 @@ if __name__ == '__main__':
     ecoparser    = EcocycParser()
     proteins_db  = ecoparser.generate_proteins_entory(proteins_dat)
     reactions_db = ecoparser.generate_reactions_entory(reactions_dat)
-    
-    #enz = EnzInteractionMap()
-    #enz_interaction = enz.generate_enz_reaction_map(proteins_db=proteins_db, reactions_db=reactions_db)
-    #pp.pprint(enz_interaction)
 
-    modproteins = ModifiedProteinInteraction(proteins_db)
+    # enzyme protein
+    enz = EnzInteractionMap()
+    enz_interaction = enz.generate_enz_reaction_map(proteins_db=proteins_db, reactions_db=reactions_db)
+    
+    protein_modification = ModifiedProteinInteraction(proteins_db)
     traceback = modproteins.traceback_to_unmodified_proteins()
-    for j in traceback:
-        print traceback[j]
+    
+
     
