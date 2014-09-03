@@ -14,6 +14,7 @@ class Parser(object):
     def __init__(self):
         logging.basicConfig(level=logging.DEBUG,
                             format="%(asctime)s %(levelname)s %(message)s")
+        
     def has_key(self, entry, key):
         return any([attr[0] == key for attr in entry])
 
@@ -36,7 +37,7 @@ class Parser(object):
             return (line[: -2], "")
         else:
             raise ValueError, "'{}'".format(line)
-
+            
     def read_ecocyc_file(self, filename):
         if not os.path.isfile(filename):
             raise RuntimeError, "{0} is not found".format(filename)
@@ -154,8 +155,27 @@ class EcocycParser(Parser):
         return db
 
     def generate_features_entory(self, dat):
-        return self.read_ecocyc_file(dat) # FIXME
-                
+        pfeature = self.read_ecocyc_file(dat)
+        db = defaultdict(dict, {"primary_key": {"source": map(os.path.basename, [dat]), "type": "protein-features" }})
+        
+        for pfeature_id, pfeature_entory in pfeature.items():
+            types = self.find_attr(pfeature_entory, "TYPES")
+            db[pfeature_id].update({"TYPES": [ (_[1]) for _ in types ]})
+            
+            feature_of = self.find_attr(pfeature_entory, "FEATURE-OF")
+            db[pfeature_id].update({"FEATURE-OF": [ (_[1]) for _ in feature_of ]})
+            
+            cat_act = self.find_attr(pfeature_entory, "CATALYTIC-ACTIVITY")
+            db[pfeature_id].update({"CATALYTIC-ACTIVITY": [ (_[1]) for _ in cat_act ]})
+            
+            attached_group = self.find_attr(pfeature_entory, "ATTACHED-GROUP")
+            db[pfeature_id].update({"ATTACHED-GROUP": [ (_[1]) for _ in attached_group ]})
+            
+            possible_state = self.find_attr(pfeature_entory, "POSSIBLE-FEATURE-STATES")
+            db[pfeature_id].update({"POSSIBLE-FEATURE-STATES": [ (_[1]) for _ in possible_state ]})
+            
+        return db
+            
     def genrate_enzymes_entory(self, dat):
         return self.read_ecocyc_file(dat) # FIXME
 
