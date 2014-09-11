@@ -91,25 +91,36 @@ class ModifiedProteinInteraction(ComponentInteraction):
                     mapping.update( {unmodified_p[0]: {"TO": type_name, "FROM": unmodified_p[0]}} )
         return mapping
 
+    def back_to_parents(self):
+        pass
+
+    def is_monomer(self, query):
+        pass
+
+    def is_complex(self, query):
+        pass
+
+    def query_by_protein_name(self, query):
+        pass
+
                     
 if __name__ == '__main__':
     # Raw Ecocyc data
-    proteins_dat  = '/Users/yukke/dev/ecellp2014/ecocyc/data/proteins.dat'
+    proteins_dat  = '/Users/yukke/Dropbox/ecocyc/data/proteins.dat'
     reactions_dat = '/Users/yukke/dev/ecellp2014/ecocyc/data/reactions.dat'
     features_dat  = '/Users/yukke/dev/ecellp2014/ecocyc/data/protein-features.dat'
     enzrxns_dat   = '/Users/yukke/dev/ecellp2014/ecocyc/data/enzrxns.dat'
-    
+     
     # Parseing data
     ecoparser    = EcocycParser()
     proteins_db  = ecoparser.generate_proteins_entory(proteins_dat)
     reactions_db = ecoparser.generate_reactions_entory(reactions_dat)
-
+     
     # enzyme protein
-    enz = EnzInteractionMap()
-    enz_interaction = enz.generate_enz_reaction_map(proteins_db=proteins_db, reactions_db=reactions_db)
-    
-    protein_modification = ModifiedProteinInteraction(proteins_db)
-    traceback = modproteins.traceback_to_unmodified_proteins()
-    
+    #enz = EnzInteractionMap()
+    #enz_interaction = enz.generate_enz_reaction_map(proteins_db=proteins_db, reactions_db=reactions_db)
 
-    
+    mod_p = ModifiedProteinInteraction(proteins_db)
+    traceback = mod_p.traceback_to_unmodified_proteins()
+    for k in traceback:
+        print "{} is drived from {}".format( traceback[k].get("TO"), k)
