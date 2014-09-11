@@ -1,11 +1,11 @@
-# Reconstruction of protein complex network for whole cell simulation of _E. coli_
+## [E-cell split 2014] Reconstruction of protein complex network for whole cell simulation of _E. coli_
 
-## Aim
+### Aim
 
 
-## Example
+### Example
 
-```
+```python
 # Ecocyc raw dat file
 proteins_dat  = '/Users/yukke/dev/ecellp2014/ecocyc/data/proteins.dat'
 
