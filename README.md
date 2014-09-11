@@ -1,4 +1,4 @@
-## [E-cell split 2014] Reconstruction of protein complex network for whole cell simulation of _E. coli_
+## [E-cell splint 2014] Reconstruction of protein complex network for whole cell simulation of _E. coli_
 
 ### Aim
 
