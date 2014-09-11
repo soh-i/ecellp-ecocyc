@@ -1,7 +1,4 @@
-## [E-cell splint 2014] Reconstruction of protein complex network for whole cell simulation of _E. coli_
-
-### Aim
-
+## [E-cell sprint 2014] Reconstruction of protein complex network for whole cell simulation of _E. coli_
 
 ### Example
 
